@@ -37,15 +37,25 @@ Route::group(['prefix' => 'products'], function () {
     Route::get('/{product}', [ProductController::class, 'show']);
     Route::put('/{product}', [ProductController::class, 'update']);
     Route::delete('/{product}', [ProductController::class, 'destroy']);
+    Route::get('/filter/{categoryName}', [ProductController::class, 'listProductsByCategory']);
 });
+
+
 Route::group(['prefix' => 'productImg'], function () {
+    Route::get('/', [ProductImgController::class, 'index']);    
+    Route::post('/', [ProductImgController::class, 'store']);
+    Route::get('/{product}', [ProductImgController::class, 'show']);
+    Route::get('/filter/{product}', [ProductImgController::class, 'listProductImage']);
+    Route::put('/{product}', [ProductImgController::class, 'update']);
+    Route::delete('/{product}', [ProductImgController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'order'], function () {
     Route::get('/', [ProductImgController::class, 'index']);    
     Route::post('/', [ProductImgController::class, 'store']);
     Route::get('/{product}', [ProductImgController::class, 'show']);
     Route::put('/{product}', [ProductImgController::class, 'update']);
     Route::delete('/{product}', [ProductImgController::class, 'destroy']);
-    
-
 });
 
 // Route::post('/', [ProductController::class, 'store']);

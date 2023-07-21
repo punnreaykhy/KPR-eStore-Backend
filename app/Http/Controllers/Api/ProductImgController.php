@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\ProductImage;
+use Illuminate\Http\Request;
 
 class ProductImgController extends Controller
 {
@@ -28,8 +28,6 @@ class ProductImgController extends Controller
             'image_path' => 'required',
         ]);
 
-        
-
         $images = null;
 
         if ($request->hasFile('image_path')) {
@@ -39,15 +37,14 @@ class ProductImgController extends Controller
             $images = '/product-sub-images/' . $imageName;
         }
         // if($images){
-            
+
         // }
         $product = new ProductImage();
-            $product->product_id = $validatedData['product_id'];
-            $product->image_path = $images;
-            $product->save();
-        
-            return response()->json($product, 201);
-        
+        $product->product_id = $validatedData['product_id'];
+        $product->image_path = $images;
+        $product->save();
+
+        return response()->json($product, 201);
     }
 
     public function show($id)
@@ -55,12 +52,26 @@ class ProductImgController extends Controller
         $img = ProductImage::findOrFail($id);
         return response()->json($img);
     }
-    public function showImg($filename)
-{
-    $path = public_path('/product-sub-images/' . $filename);
-    return response()->file($path);
-}
 
+    public function showImg($filename)
+    {
+        $path = public_path('/product-sub-images/' . $filename);
+        return response()->file($path);
+    }
+
+    public function listProductImage($pId)
+    {
+        $pImages = ProductImage::where('product_id', $pId)->get();
+
+        if (!$pImages) {
+            return response()->json(['message' => 'pImages not found'], 404);
+        }
+
+        // Get all products associated with the pImages
+
+        // Return the products as a JSON response
+        return response()->json($pImages);
+    }
 
     public function update(ProductImage $request, $id)
     {

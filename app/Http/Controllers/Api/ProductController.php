@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -11,9 +12,13 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
+        $perPage = $request->input('size', 12); // Default to 12 records per page if 'size' parameter is not provided
+        $page = $request->input('page', 1); // Default to the first page if 'page' parameter is not provided
+
+        $products = Product::paginate($perPage, ['*'], 'page', $page);
+        // $products = Product::all();
         if ($products->count() > 0) {
             return response()->json($products);
         } else {
@@ -27,10 +32,10 @@ class ProductController extends Controller
             'name' => 'required',
             'description' => 'required',
             'category_id' => 'required',
+            'stock' => 'required',
             'price' => 'required',
             'image_path' => 'required',
         ]);
-
 
         $images = null;
 
@@ -44,6 +49,7 @@ class ProductController extends Controller
         $product = new Product();
         $product->name = $validatedData['name'];
         $product->price = $validatedData['price'];
+        $product->stock = $validatedData['stock'];
         $product->image_path = $images;
         $product->category_id = $validatedData['category_id'];
         $product->description = $validatedData['description'];
@@ -58,17 +64,32 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         return response()->json($product);
     }
+
+    public function listProductsByCategory($categoryName)
+    {
+        $category = Category::where('name', $categoryName)->with('products')->first();
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
+        // Get all products associated with the category
+        $products = $category->products;
+
+        // Return the products as a JSON response
+        return response()->json($products);
+    }
+
     public function showImg($filename)
-{
-    $path = public_path('/product-images/' . $filename);
-    return response()->file($path);
-}
+    {
+        $path = public_path('/product-images/' . $filename);
+        return response()->file($path);
+    }
 
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
         if ($request->hasFile('image_path')) {
-            
             $img = $request->file('image_path');
             $imageName = time() . $img->GetClientOriginalName();
             $img->move(public_path('product-images'), $imageName);
@@ -93,7 +114,5 @@ class ProductController extends Controller
         $product->delete();
 
         return response()->json(['message' => 'Product deleted successfully']);
-        
     }
-    
 }
