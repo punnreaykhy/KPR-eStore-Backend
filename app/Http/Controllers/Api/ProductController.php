@@ -17,12 +17,21 @@ class ProductController extends Controller
         $perPage = $request->input('size', 12); // Default to 12 records per page if 'size' parameter is not provided
         $page = $request->input('page', 1); // Default to the first page if 'page' parameter is not provided
 
-        $products = Product::paginate($perPage, ['*'], 'page', $page);
+        $products = Product::where('stock', '>', 0)->paginate($perPage, ['*'], 'page', $page);
         // $products = Product::all();
         if ($products->count() > 0) {
             return response()->json($products);
         } else {
             return response()->json(['error' => "You Don't Have Any Data Yet!"]);
+        }
+    }
+
+    public function outOfStock(){
+        $products = Product::where('stock', '=', 0)->get();
+        if ($products->count() > 0) {
+            return response()->json($products);
+        } else {
+            return response()->json(['error' => "You Don't Have Any Out of Stock Yet!"]);
         }
     }
 

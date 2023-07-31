@@ -33,6 +33,7 @@ Route::group(['prefix' => 'categories'], function () {
 
 Route::group(['prefix' => 'products'], function () {
     Route::get('/', [ProductController::class, 'index']);
+    Route::get('/outofstock', [ProductController::class, 'outOfStock']);
     Route::post('/', [ProductController::class, 'store']);
     Route::get('/{product}', [ProductController::class, 'show']);
     Route::put('/{product}', [ProductController::class, 'update']);
