@@ -14,8 +14,8 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('size', 12); // Default to 12 records per page if 'size' parameter is not provided
-        $page = $request->input('page', 1); // Default to the first page if 'page' parameter is not provided
+        $perPage = $request->input('size', 12);  // Default to 12 records per page if 'size' parameter is not provided
+        $page = $request->input('page', 1);  // Default to the first page if 'page' parameter is not provided
 
         $products = Product::where('stock', '>', 0)->paginate($perPage, ['*'], 'page', $page);
         // $products = Product::all();
@@ -26,7 +26,22 @@ class ProductController extends Controller
         }
     }
 
-    public function outOfStock(){
+    public function search(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm');
+
+        $products = Product::where('stock', '>', 0)->where('name', 'LIKE', "%$searchTerm%")->get();
+
+        if ($products->count() > 0) {
+            return response()->json($products);
+        } else {
+            return response()->json(['error' => "Item not found!"]);
+        }
+        // return response()->json($products);
+    }
+
+    public function outOfStock()
+    {
         $products = Product::where('stock', '=', 0)->get();
         if ($products->count() > 0) {
             return response()->json($products);
@@ -76,7 +91,9 @@ class ProductController extends Controller
 
     public function listProductsByCategory($categoryName)
     {
-        $category = Category::where('name', $categoryName)->with('products')->first();
+        $category = Category::where('name', $categoryName)->with(['products' => function($query) {
+            $query->where('stock', '>', 0);
+        }])->first();
 
         if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
